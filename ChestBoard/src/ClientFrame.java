@@ -6,34 +6,32 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 
+class Grid extends JPanel {
+    Points[][] points = new Points[15][15];
 
-class Grid extends JPanel{
-    Points[][] points= new Points[15][15];
-    Grid(){
+    Grid() {
         this.setOpaque(false);
-        for (int i=0;i<15;i++){
-            for(int j=0;j<15;j++){
-                points[i][j]=new Points(i,j,j*40+26,i*40+26);
-                //points[i][j].paintComponent(jf.getGraphics());
+        for (int i = 0; i < 15; i++) {
+            for (int j = 0; j < 15; j++) {
+                points[i][j] = new Points(i, j, j * 40 + 26, i * 40 + 26);
             }
         }
         listen_mouse();
     }
-    void listen_mouse(){
+
+    void listen_mouse() {
         MouseAdapter adapter = new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
                 //if("end".equals(status)) return;
-                int x=e.getX();
-                int y= e.getY();
+                int x = e.getX();
+                int y = e.getY();
                 Points curr;
-                for (int i=0;i<15;i++){
-                    for(int j=0;j<15;j++){
-                        curr=points[i][j];
-                        if(curr.isMousearound(x,y)) {
-                            curr.show=true;
-                        }
-                        else curr.show=false;
+                for (int i = 0; i < 15; i++) {
+                    for (int j = 0; j < 15; j++) {
+                        curr = points[i][j];
+                        if (curr.isMousearound(x, y)) curr.show = true;
+                        else curr.show = false;
                     }
                 }
                 repaint();
@@ -41,33 +39,34 @@ class Grid extends JPanel{
         };
         addMouseMotionListener(adapter);
         addMouseListener(adapter);
-
     }
-    public void drawgrid(Graphics graphic){
+
+    public void drawgrid(Graphics graphic) {
         int x;
         int y;
         //draw line
-        for (int i=0;i<15;i++){
-            y=i*40+26;
+        for (int i = 0; i < 15; i++) {
+            y = i * 40 + 26;
             graphic.drawLine(26, y, 586, y);
         }
-        for (int i=0;i<15;i++){
-            x=i*40+26;
-            graphic.drawLine(x,26,x,586);
+        for (int i = 0; i < 15; i++) {
+            x = i * 40 + 26;
+            graphic.drawLine(x, 26, x, 586);
         }
         //draw points
-        graphic.fillArc(142,142,8,8,0,360);
-        graphic.fillArc(462,142,8,8,0,360);
-        graphic.fillArc(142,462,8,8,0,360);
-        graphic.fillArc(462,462,8,8,0,360);
-        graphic.fillArc(302,302,8,8,0,360);
+        graphic.fillArc(142, 142, 8, 8, 0, 360);
+        graphic.fillArc(462, 142, 8, 8, 0, 360);
+        graphic.fillArc(142, 462, 8, 8, 0, 360);
+        graphic.fillArc(462, 462, 8, 8, 0, 360);
+        graphic.fillArc(302, 302, 8, 8, 0, 360);
     }
+
     @Override
-    public void paint(Graphics graphic){
+    public void paint(Graphics graphic) {
         super.paint(graphic);
         drawgrid(graphic);
-        for (int i=0;i<15;i++){
-            for(int j=0;j<15;j++){
+        for (int i = 0; i < 15; i++) {
+            for (int j = 0; j < 15; j++) {
                 points[i][j].draw(graphic);
             }
         }
@@ -75,41 +74,37 @@ class Grid extends JPanel{
     }
 }
 
-class Points{
-    private int row=0;
-    private int col=0;
-    private int x=0;
-    private int y=0;
-    private int h=36;
-    boolean show=false;
-    Points(int row, int col, int x, int y){
-        this.row=row;
+class Points {
+    private int row = 0;
+    private int col = 0;
+    private int x = 0;
+    private int y = 0;
+    private int h = 40;
+    boolean show = false;
+
+    Points(int row, int col, int x, int y) {
+        this.row = row;
         this.col = col;
-        this.x=x;
-        this.y=y;
-    }
-    public void draw(Graphics graphic){
-        graphic.setColor(Color.RED);
-        if(show){
-            graphic.drawRect(x-h/2,y-h/2,h,h);
-        }
+        this.x = x;
+        this.y = y;
     }
 
-    boolean isMousearound(int x,int y){
-        int x_bound_1=this.x-h/2;
-        int y_bound_1=this.y-h/2;
-        int x_bound_2=this.x+h/2;
-        int y_bound_2=this.y+h/2;
-        System.out.println(y);
-        return x>x_bound_1 && y>y_bound_1 && x<x_bound_2 && y<y_bound_2;
+    public void draw(Graphics graphic) {
+        graphic.setColor(Color.RED);
+        if (show) graphic.drawRect(x - h / 2, y - h / 2, h, h);
+    }
+
+    boolean isMousearound(int x, int y) {
+        return x > this.x - h / 2 && y > this.y - h / 2 && x < this.x + h / 2 && y < this.y + h / 2;
     }
 }
-public class ClientFrame{
+
+public class ClientFrame {
     private JFrame jf;
-    //private JPanel jp;
-    private String status="playing";
+    //private String status="playing";
     private Grid grid;
     private JMenuBar menu;
+
     public ClientFrame() {
         //settings for frame
         jf = new JFrame("Gomoku");
@@ -125,6 +120,7 @@ public class ClientFrame{
         jf.getContentPane().add(grid);
         jf.setVisible(true);
     }
+
     void setupMenu() {
         menu = new JMenuBar();
         JMenu menu1 = new JMenu("Game");
@@ -146,16 +142,18 @@ public class ClientFrame{
         item4.addActionListener(new rules());
         //item4.setActionCommand();
     }
+
     public static void main(String[] args) {
         ClientFrame frame = new ClientFrame();
     }
 }
-class rules implements ActionListener  {
+
+class rules implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
 
         JFrame jf = new JFrame("Rules");
-        jf.setSize(300,200);
+        jf.setSize(300, 200);
 
         JPanel jp = new JPanel(new BorderLayout());
 
