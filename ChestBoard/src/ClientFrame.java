@@ -17,22 +17,25 @@ public class ClientFrame {
         //settings for panel
         jp= new JPanel();
         //settings for menu
+        setupMenu();
+        jf.setVisible(true);
+    }
+
+    void setupMenu(){
         menu=new JMenuBar();
         JMenu menu1 = new JMenu("Game");
         JMenu menu2 = new JMenu("Help");
         menu.add(menu1);
         menu.add(menu2);
+        JMenuItem item1 = new JMenuItem("Ask for Rematch");
+        JMenuItem item2 = new JMenuItem("Surrender");
+        menu1.add(item1);
+        menu1.add(item2);
+        JMenuItem item3= new JMenuItem("Instruction");
+        menu2.add(item3);
         menu.setBackground(Color.WHITE);
         jf.setJMenuBar(menu);
-
-
-
-
-
-
-        jf.setVisible(true);
     }
-
     public static void main(String[] args) {
         ClientFrame frame = new ClientFrame();
     }
