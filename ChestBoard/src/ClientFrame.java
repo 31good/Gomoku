@@ -3,27 +3,60 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ClientFrame {
+
+class Grid extends JPanel{
+    @Override
+    public void paintComponent(Graphics graphic){
+        super.paintComponent(graphic);
+        int x;
+        int y;
+        //draw line
+        for (int i=0;i<15;i++){
+            y=i*40+26;
+            graphic.drawLine(26, y, 586, y);
+        }
+        for (int i=0;i<15;i++){
+            x=i*40+26;
+            graphic.drawLine(x,26,x,586);
+        }
+        //draw points
+        graphic.fillArc(142,142,8,8,0,360);
+        graphic.fillArc(462,142,8,8,0,360);
+        graphic.fillArc(142,462,8,8,0,360);
+        graphic.fillArc(462,462,8,8,0,360);
+        graphic.fillArc(302,302,8,8,0,360);
+
+    }
+}
+
+public class ClientFrame extends JPanel {
     private JFrame jf;
-    private JPanel jp;
+    //private JPanel jp;
 
     private JMenuBar menu;
-
     public ClientFrame() {
         //settings for frame
         jf = new JFrame("Backgammon");
         jf.setSize(620, 670);
-        jf.getContentPane().setBackground(new Color(210, 150, 20));
+        //jf.getContentPane().setBackground(new Color(210, 150, 20));
         jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jf.setResizable(false);
         jf.setLocationRelativeTo(null);
         //settings for panel
-        jp = new JPanel();
+        //jp = new JPanel();
         //settings for menu
         setupMenu();
+        Grid grid = new Grid();
+        grid.setBackground(new Color(210, 150, 20));
+        //paint the chessboard
+        jf.getContentPane().add(grid);
         jf.setVisible(true);
     }
-
+    @Override
+    public void paintComponent(Graphics graphic){
+        super.paintComponent(graphic);
+        graphic.drawLine(26, 26, 586, 26);
+    }
     void setupMenu() {
         menu = new JMenuBar();
         JMenu menu1 = new JMenu("Game");
@@ -43,7 +76,7 @@ public class ClientFrame {
         //item1.addActionListener();
         //item2.addActionListener();
         item4.addActionListener(new rules());
-
+        //item4.setActionCommand();
     }
 
     public static void main(String[] args) {
