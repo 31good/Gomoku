@@ -2,12 +2,48 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+
 
 
 class Grid extends JPanel{
-    @Override
-    public void paintComponent(Graphics graphic){
-        super.paintComponent(graphic);
+    Points[][] points= new Points[15][15];
+    Grid(){
+        this.setOpaque(false);
+        for (int i=0;i<15;i++){
+            for(int j=0;j<15;j++){
+                points[i][j]=new Points(i,j,j*40+26,i*40+26);
+                //points[i][j].paintComponent(jf.getGraphics());
+            }
+        }
+        listen_mouse();
+    }
+    void listen_mouse(){
+        MouseAdapter adapter = new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                //if("end".equals(status)) return;
+                int x=e.getX();
+                int y= e.getY();
+                Points curr;
+                for (int i=0;i<15;i++){
+                    for(int j=0;j<15;j++){
+                        curr=points[i][j];
+                        if(curr.isMousearound(x,y)) {
+                            curr.show=true;
+                        }
+                        else curr.show=false;
+                    }
+                }
+                repaint();
+            }
+        };
+        addMouseMotionListener(adapter);
+        addMouseListener(adapter);
+
+    }
+    public void drawgrid(Graphics graphic){
         int x;
         int y;
         //draw line
@@ -25,37 +61,69 @@ class Grid extends JPanel{
         graphic.fillArc(142,462,8,8,0,360);
         graphic.fillArc(462,462,8,8,0,360);
         graphic.fillArc(302,302,8,8,0,360);
+    }
+    @Override
+    public void paint(Graphics graphic){
+        super.paint(graphic);
+        drawgrid(graphic);
+        for (int i=0;i<15;i++){
+            for(int j=0;j<15;j++){
+                points[i][j].draw(graphic);
+            }
+        }
 
     }
 }
 
-public class ClientFrame extends JPanel {
+class Points{
+    private int row=0;
+    private int col=0;
+    private int x=0;
+    private int y=0;
+    private int h=36;
+    boolean show=false;
+    Points(int row, int col, int x, int y){
+        this.row=row;
+        this.col = col;
+        this.x=x;
+        this.y=y;
+    }
+    public void draw(Graphics graphic){
+        graphic.setColor(Color.RED);
+        if(show){
+            graphic.drawRect(x-h/2,y-h/2,h,h);
+        }
+    }
+
+    boolean isMousearound(int x,int y){
+        int x_bound_1=this.x-h/2;
+        int y_bound_1=this.y-h/2;
+        int x_bound_2=this.x+h/2;
+        int y_bound_2=this.y+h/2;
+        System.out.println(y);
+        return x>x_bound_1 && y>y_bound_1 && x<x_bound_2 && y<y_bound_2;
+    }
+}
+public class ClientFrame{
     private JFrame jf;
     //private JPanel jp;
-
+    private String status="playing";
+    private Grid grid;
     private JMenuBar menu;
     public ClientFrame() {
         //settings for frame
-        jf = new JFrame("Backgammon");
+        jf = new JFrame("Gomoku");
         jf.setSize(620, 670);
-        //jf.getContentPane().setBackground(new Color(210, 150, 20));
+        jf.getContentPane().setBackground(new Color(210, 150, 20));
         jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jf.setResizable(false);
         jf.setLocationRelativeTo(null);
-        //settings for panel
-        //jp = new JPanel();
-        //settings for menu
         setupMenu();
-        Grid grid = new Grid();
-        grid.setBackground(new Color(210, 150, 20));
+        //listen_mouse();
+        grid = new Grid();
         //paint the chessboard
         jf.getContentPane().add(grid);
         jf.setVisible(true);
-    }
-    @Override
-    public void paintComponent(Graphics graphic){
-        super.paintComponent(graphic);
-        graphic.drawLine(26, 26, 586, 26);
     }
     void setupMenu() {
         menu = new JMenuBar();
@@ -78,11 +146,9 @@ public class ClientFrame extends JPanel {
         item4.addActionListener(new rules());
         //item4.setActionCommand();
     }
-
     public static void main(String[] args) {
         ClientFrame frame = new ClientFrame();
     }
-
 }
 class rules implements ActionListener  {
     @Override
