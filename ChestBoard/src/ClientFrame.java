@@ -70,7 +70,11 @@ class Grid extends JPanel {
                 points[i][j].draw(graphic);
             }
         }
-
+        /*
+        graphic.setColor(Color.BLACK);
+        graphic.drawOval(50 - 20, 50 - 20, 20 * 2, 20 * 2);
+        graphic.fillOval(50 - 20, 50 - 20, 20 * 2, 20 * 2);
+        */
     }
 }
 
@@ -91,7 +95,21 @@ class Points {
 
     public void draw(Graphics graphic) {
         graphic.setColor(Color.RED);
-        if (show) graphic.drawRect(x - h / 2, y - h / 2, h, h);
+        if(show) {
+            Graphics2D g = (Graphics2D) graphic;
+            g.setStroke(new BasicStroke(1.5f));
+            //horizontal
+            g.drawLine(this.x-h/2,this.y - h / 2,this.x-h/4,this.y - h / 2);
+            g.drawLine(this.x+h/4,this.y - h / 2,this.x+h/2,this.y - h / 2);
+            g.drawLine(this.x-h/2,this.y + h / 2,this.x-h/4,this.y + h / 2);
+            g.drawLine(this.x+h/4,this.y + h / 2,this.x+h/2,this.y + h / 2);
+            //vertical
+            g.drawLine(this.x+h/2,this.y - h / 2,this.x+h/2,this.y - h / 4);
+            g.drawLine(this.x+h/2,this.y + h / 4,this.x+h/2,this.y + h / 2);
+            g.drawLine(this.x-h/2,this.y - h / 2,this.x-h/2,this.y - h / 4);
+            g.drawLine(this.x-h/2,this.y + h / 4,this.x-h/2,this.y + h / 2);
+        }
+
     }
 
     boolean isMousearound(int x, int y) {
