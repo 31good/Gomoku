@@ -4,12 +4,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
+import java.util.Objects;
 
 class Grid extends JPanel {
     Points[][] points = new Points[15][15];
-
-    Grid() {
+    //List<Chess> chesses= new ArrayList<Chess>();
+    String color;
+    String status="start";
+    Grid(String color) {
+        this.color=color;
         this.setOpaque(false);
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
@@ -17,20 +20,21 @@ class Grid extends JPanel {
             }
         }
         listen_mouse();
+        mouseclick();
     }
 
     void listen_mouse() {
         MouseAdapter adapter = new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                //if("end".equals(status)) return;
+                if("end".equals(status)) return;
                 int x = e.getX();
                 int y = e.getY();
                 Points curr;
                 for (int i = 0; i < 15; i++) {
                     for (int j = 0; j < 15; j++) {
                         curr = points[i][j];
-                        if (curr.isMousearound(x, y)) curr.show = true;
+                        if (curr.isMousearound(x, y) && Objects.equals(curr.occupied, "None")) curr.show = true;
                         else curr.show = false;
                     }
                 }
@@ -38,6 +42,39 @@ class Grid extends JPanel {
             }
         };
         addMouseMotionListener(adapter);
+        addMouseListener(adapter);
+    }
+
+    void mouseclick(){
+        MouseAdapter adapter = new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if("end".equals(status)) return;
+                int x = e.getX();
+                int y = e.getY();
+                Points curr;
+                for (int i = 0; i < 15; i++) {
+                    for (int j = 0; j < 15; j++) {
+                        curr = points[i][j];
+                        if (curr.isMousearound(x, y) && Objects.equals(curr.occupied, "None")){
+                            curr.occupied=color;
+                            curr.show=false;
+                            repaint();
+                            return;
+                        }
+                        /*
+                        if (curr.isMousearound(x, y) && !curr.occupied){
+                            //System.out.println(1);
+                            chesses.add(new Chess(curr.x,curr.y,color));
+                            curr.occupied=true;
+                            repaint();
+                            return;
+                        }
+                         */
+                    }
+                }
+            }
+        };
         addMouseListener(adapter);
     }
 
@@ -71,21 +108,95 @@ class Grid extends JPanel {
             }
         }
         /*
-        graphic.setColor(Color.BLACK);
-        graphic.drawOval(50 - 20, 50 - 20, 20 * 2, 20 * 2);
-        graphic.fillOval(50 - 20, 50 - 20, 20 * 2, 20 * 2);
-        */
+        for(Chess chess: chesses){
+            chess.draw(graphic);
+        }*/
+    }
+
+    public boolean checkover(Points[][] points) {
+        Points curr;
+        for (int i = 0; i < 15; i++) {
+            for (int j = 0; j < 15; j++) {
+                curr = points[i][j];
+                if(Objects.equals(curr.occupied, "None")) continue;
+                String curr_color=curr.occupied;
+                int curr_i;
+                int curr_j;
+                if(i+4<15){
+                    curr_i=i;
+                    while(curr_i<=i+4){
+                        if(!Objects.equals(points[curr_i][j].occupied, curr_color))break;
+                        curr_i+=1;
+                    }
+                    if(curr_i==i+5){return true;}
+                }
+                if(j+4<15){
+                    curr_j=j;
+                    while(curr_j<=j+4){
+                        if(!Objects.equals(points[i][curr_j].occupied, curr_color))break;
+                        curr_j+=1;
+                    }
+                    if(curr_j==j+5){return true;}
+                }
+                if(i+4<15 && j+4<15){
+                    curr_i=i;
+                    curr_j=j;
+                    while(curr_j<=j+4){
+                        if(!Objects.equals(points[curr_i][curr_j].occupied, curr_color))break;
+                        curr_j+=1;
+                        curr_i+=1;
+                    }
+                    if(curr_j==j+5){return true;}
+                }
+                if(i+4<15 && j-4>-1){
+                    curr_i=i;
+                    curr_j=j;
+                    while(curr_j<=j+4){
+                        if(!Objects.equals(points[curr_i][curr_j].occupied, curr_color))break;
+                        curr_j-=1;
+                        curr_i+=1;
+                    }
+                    if(curr_i==i+5){return true;}
+                }
+            }
+
+        }
+        return false;
     }
 }
+
+/*
+class Chess{
+    int x;
+    int y;
+    String color;
+
+    Chess(int x, int y, String color){this.x=x;this.y=y;this.color=color;}
+
+    public void draw(Graphics graphic){
+        if(Objects.equals(color, "B")){
+            graphic.setColor(Color.BLACK);
+        }
+        else{
+            graphic.setColor(Color.WHITE);
+        }
+        graphic.drawOval(x-33/2, y-33/2, 33, 33);
+        graphic.fillOval(x-33/2, y-33/2, 33, 33);
+    }
+}
+*/
+
 
 class Points {
     private int row = 0;
     private int col = 0;
-    private int x = 0;
-    private int y = 0;
+    int x ;
+    int y;
     private int h = 40;
     boolean show = false;
 
+    //boolean occupied = false;
+    String occupied="None";
     Points(int row, int col, int x, int y) {
         this.row = row;
         this.col = col;
@@ -109,7 +220,17 @@ class Points {
             g.drawLine(this.x-h/2,this.y - h / 2,this.x-h/2,this.y - h / 4);
             g.drawLine(this.x-h/2,this.y + h / 4,this.x-h/2,this.y + h / 2);
         }
-
+        else {
+            if (Objects.equals(occupied, "B")) {
+                graphic.setColor(Color.BLACK);
+                graphic.drawOval(x - 33 / 2, y - 33 / 2, 33, 33);
+                graphic.fillOval(x - 33 / 2, y - 33 / 2, 33, 33);
+            } else if (Objects.equals(occupied, "W")) {
+                graphic.setColor(Color.WHITE);
+                graphic.drawOval(x - 33 / 2, y - 33 / 2, 33, 33);
+                graphic.fillOval(x - 33 / 2, y - 33 / 2, 33, 33);
+            }
+        }
     }
 
     boolean isMousearound(int x, int y) {
@@ -123,7 +244,8 @@ public class ClientFrame {
     private Grid grid;
     private JMenuBar menu;
 
-    public ClientFrame() {
+    //"B" for black and "W" for white
+    public ClientFrame(String color) {
         //settings for frame
         jf = new JFrame("Gomoku");
         jf.setSize(620, 670);
@@ -133,12 +255,21 @@ public class ClientFrame {
         jf.setLocationRelativeTo(null);
         setupMenu();
         //listen_mouse();
-        grid = new Grid();
+        grid = new Grid(color);
         //paint the chessboard
-        jf.getContentPane().add(grid);
+        jf.add(grid);
+        //grid.status="end";
         jf.setVisible(true);
+        //Gameover(true);
     }
 
+
+    public void Gameover(boolean win){
+        if(win) {
+            JOptionPane.showMessageDialog(jf, "Congratulation, You win!");
+        }
+        else{JOptionPane.showMessageDialog(jf, "Sorry, You lose");}
+    }
     void setupMenu() {
         menu = new JMenuBar();
         JMenu menu1 = new JMenu("Game");
@@ -162,7 +293,7 @@ public class ClientFrame {
     }
 
     public static void main(String[] args) {
-        ClientFrame frame = new ClientFrame();
+        ClientFrame frame = new ClientFrame("B");
     }
 }
 
