@@ -60,6 +60,11 @@ class Grid extends JPanel {
                             curr.occupied=color;
                             curr.show=false;
                             repaint();
+                            if(checkover(points)){
+                                //System.out.println("Win");
+                                Gameover(true);
+                                status="end";
+                            }
                             return;
                         }
                         /*
@@ -163,6 +168,12 @@ class Grid extends JPanel {
         }
         return false;
     }
+    public void Gameover(boolean win){
+        if(win) {
+            JOptionPane.showMessageDialog(this, "Congratulation, You win!");
+        }
+        else{JOptionPane.showMessageDialog(this, "Sorry, You lose");}
+    }
 }
 
 /*
@@ -244,7 +255,6 @@ public class ClientFrame {
     private Grid grid;
     private JMenuBar menu;
 
-    //"B" for black and "W" for white
     public ClientFrame(String color) {
         //settings for frame
         jf = new JFrame("Gomoku");
@@ -260,16 +270,9 @@ public class ClientFrame {
         jf.add(grid);
         //grid.status="end";
         jf.setVisible(true);
-        //Gameover(true);
     }
 
 
-    public void Gameover(boolean win){
-        if(win) {
-            JOptionPane.showMessageDialog(jf, "Congratulation, You win!");
-        }
-        else{JOptionPane.showMessageDialog(jf, "Sorry, You lose");}
-    }
     void setupMenu() {
         menu = new JMenuBar();
         JMenu menu1 = new JMenu("Game");
@@ -293,6 +296,7 @@ public class ClientFrame {
     }
 
     public static void main(String[] args) {
+        //"B" for black and "W" for white
         ClientFrame frame = new ClientFrame("B");
     }
 }
