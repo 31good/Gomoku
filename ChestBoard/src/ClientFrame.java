@@ -277,13 +277,14 @@ public class ClientFrame {
         jf.setResizable(false);
         jf.setLocationRelativeTo(null);
         setupMenu();
-        System.out.println("nihai");
         //listen_mouse();
         grid = new Grid(color, socket, sout);
         //paint the chessboard
         jf.add(grid);
         //grid.status="end";
         jf.setVisible(true);
+        System.out.println("11111");
+        start();
     }
 
 
@@ -312,14 +313,15 @@ public class ClientFrame {
 
     public static void main(String[] args) throws IOException {
         //"B" for black and "W" for white
-        //Socket socket = new Socket();
-        //ClientFrame frame = new ClientFrame("B", socket);
-        //start();
+        Socket socket = new Socket("localhost", 5110);
+        Scanner scanner = new Scanner(socket.getInputStream());
+        PrintStream sout = new PrintStream(socket.getOutputStream());
+        ClientFrame frame = new ClientFrame("B", socket,scanner,sout);
+        start();
     }
 
     public static void start() throws IOException {
-        //String message = sin.nextLine();
-        String message = "temp";
+        String message = sin.nextLine();
         while (true) {
             if(message.contains(",")){
                 String[] parts = message.split(","); // split the string into two parts using the comma as the delimiter
@@ -360,7 +362,7 @@ public class ClientFrame {
                 grid.status="start";
                 refuse.setvisible(false);
             }
-            //message = sin.nextLine();
+            message = sin.nextLine();
             }
 
         socket.close();
