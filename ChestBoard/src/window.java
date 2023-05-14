@@ -203,7 +203,11 @@ public class window extends JFrame {
                 sout.println(loginpassword);
                 returnCode = scanner.nextLine();
                 if (returnCode.equals("200")){
-                    //启动棋盘
+                    try {
+                        new ClientFrame("B",socket);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
                 }
             }else{
                 String regUsername = regUsernameTextField.getText();
