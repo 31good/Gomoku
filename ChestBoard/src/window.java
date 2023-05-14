@@ -21,13 +21,14 @@ public class window extends JFrame {
     private JLabel regSuccess, regFail;
     private int port = 5110;
     private static window currWindow;
+    private JFrame frame;
     
     private Socket socket;
     private Scanner scanner;
     private PrintStream sout;
 
     public void windowLogin() {
-        JFrame frame = new JFrame("Login or Registration");
+        frame = new JFrame("Login or Registration");
         frame.setSize(700, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -204,10 +205,14 @@ public class window extends JFrame {
                 returnCode = scanner.nextLine();
                 if (returnCode.equals("200")){
                     try {
-                        new ClientFrame("B",socket);
+                        frame.setVisible(false);
+                        System.out.println("success");
+                        new ClientFrame("B", socket, scanner, sout);
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
+                    frame.dispose();
+                    System.out.println("Login window close");
                 }
             }else{
                 String regUsername = regUsernameTextField.getText();
@@ -223,6 +228,9 @@ public class window extends JFrame {
                 returnCode = scanner.nextLine();
                 if (returnCode.equals("300")){
                     currWindow.showLabel(true);
+                }
+                else{
+                    currWindow.showLabel(false);
                 }
             }
             

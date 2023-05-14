@@ -18,10 +18,9 @@ class Grid extends JPanel {
     int count = 0;
     PrintStream sout;
 
-    Grid(String color, Socket socket) throws IOException {
+    Grid(String color, Socket socket, PrintStream sout) throws IOException {
         this.color = color;
         this.socket = socket;
-        sout = new PrintStream(socket.getOutputStream());
         this.setOpaque(false);
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
@@ -268,9 +267,8 @@ public class ClientFrame {
     static Yes_or_no draw;
 
     static Refuse refuse = new Refuse();
-    public ClientFrame(String color, Socket socket) throws IOException {
+    public ClientFrame(String color, Socket socket, Scanner sin, PrintStream sout) throws IOException {
         ClientFrame.socket = socket;
-        sin = new Scanner(socket.getInputStream());
         //settings for frame
         jf = new JFrame("Gomoku");
         jf.setSize(620, 670);
@@ -279,8 +277,9 @@ public class ClientFrame {
         jf.setResizable(false);
         jf.setLocationRelativeTo(null);
         setupMenu();
+        System.out.println("nihai");
         //listen_mouse();
-        grid = new Grid(color, socket);
+        grid = new Grid(color, socket, sout);
         //paint the chessboard
         jf.add(grid);
         //grid.status="end";
@@ -313,13 +312,14 @@ public class ClientFrame {
 
     public static void main(String[] args) throws IOException {
         //"B" for black and "W" for white
-        Socket socket = new Socket();
-        ClientFrame frame = new ClientFrame("B", socket);
-        start();
+        //Socket socket = new Socket();
+        //ClientFrame frame = new ClientFrame("B", socket);
+        //start();
     }
 
     public static void start() throws IOException {
-        String message = sin.nextLine();
+        //String message = sin.nextLine();
+        String message = "temp";
         while (true) {
             if(message.contains(",")){
                 String[] parts = message.split(","); // split the string into two parts using the comma as the delimiter
@@ -360,7 +360,7 @@ public class ClientFrame {
                 grid.status="start";
                 refuse.setvisible(false);
             }
-            message = sin.nextLine();
+            //message = sin.nextLine();
             }
 
         socket.close();
@@ -496,4 +496,3 @@ class Yes_or_no {
     }
 
 }
-
