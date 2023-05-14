@@ -21,8 +21,8 @@ import java.util.HashMap;
  * @author 15801
  */
 
-public class BlackGammonServer {
-    private static int Port = 5190;
+ public class BlackGammonServer {
+    private static int Port = 5110;
     private static String url = "jdbc:mariadb://localhost:3306/chatappdb";
     private static String user = "root";
     private static String hostpassword = "12345678";
@@ -39,8 +39,8 @@ public class BlackGammonServer {
     
     private void startServer(){
         try{
-            ServerSocket ss = new ServerSocket(5190);
-            //System.out.println("Server start on port:" + Port);
+            ServerSocket ss = new ServerSocket(Port);
+            System.out.println("Server start on port:" + Port);
             while (true){
                 //System.out.println("port 5190!");
                 Socket userSock = ss.accept(); 
@@ -51,9 +51,11 @@ public class BlackGammonServer {
             }
         }
         catch(IOException e){
+            System.out.println(e);
             System.out.println("Unable to bind to port" + Port);
         }
     }
+    
     private boolean storeChessHistory(String username1, String username2, String winner){
         return true;
     }
@@ -147,9 +149,10 @@ public class BlackGammonServer {
                         sout.println("Please enter your password:");
                         String password = sin.next();
                         Boolean ifSuccess = registerAcctount(email, username, password);
-                        if(ifSuccess)
+                        if(ifSuccess){
                             sout.println("200");
-                        else
+                            break;
+                        }else
                             sout.println("500");
                     }else{
                         sout.println("Please enter your username:");
@@ -169,9 +172,16 @@ public class BlackGammonServer {
                 while(true){
                     if(connectedSocket == null){
                         String menuOption = sin.next();
-                        if (menuOption.equals("Search"))
+                        if (menuOption.equals("Search")){
                             unmatchUsersArr.add(this);
-                        else if (menuOption.equals("EXIT")){
+                            while (unmatchUsersArr.size() >= 2){
+                                unmatchUsersArr.get(0).setUpChess(unmatchUsersArr.get(1), true);
+                                unmatchUsersArr.get(1).setUpChess(unmatchUsersArr.get(0), false);
+                                unmatchUsersArr.remove(0);
+                                unmatchUsersArr.remove(0);
+                                System.out.println("Match Found");
+                            }
+                        }else if (menuOption.equals("EXIT")){
                             userSocket.close();
                             usersArr.remove(this);
                             break;
@@ -180,23 +190,21 @@ public class BlackGammonServer {
                             unmatchUsersArr.remove(this);
                     }
                     else{
-                        //logic of sending chess step
-                        if(ifTerm){
-                            String ChessStep = sin.next();
-                            if (ChessStep.equals("endChess")){
+                        String ChessStep = sin.next();
+                        if (ChessStep.equals("endChess")){
                                 //update record to db
                                 storeChessHistory(username, connectedSocket.getUsername(),username);
                                 connectedSocket.disconnectPlayer();
                                 connectedSocket = null;
-                            }
-                            else{
-                                connectedSocket.sendMessage(ChessStep);
-                                connectedSocket.setIfTermToTrue();
-                                ifTerm = false;
-                            }
+                        }
+                        else if(ifTerm){
+                            connectedSocket.sendMessage(ChessStep);
+                            connectedSocket.setIfTermToTrue();
+                            ifTerm = false;
                         }
                     }
                 }
+            userSocket.close();
             }
             catch(IOException e){
                 System.out.println("Error occur for" +userSocket.getInetAddress()+ "disconnected from server");
