@@ -21,7 +21,7 @@ import java.util.HashMap;
  * @author 15801
  */
 
- public class BlackGammonServer {
+public class BlackGammonServer {
     private static int Port = 5110;
     private static String url = "jdbc:mariadb://localhost:3306/chatappdb";
     private static String user = "root";
@@ -60,6 +60,8 @@ import java.util.HashMap;
         return true;
     }
     private boolean accountAuthenticate(String username, String password, String postUseraddress){
+        return true;
+        /*
         try{
             //Class.forName("com.mysql.jdbc.Driver");
             conn = DriverManager.getConnection(url,user,hostpassword);
@@ -84,9 +86,13 @@ import java.util.HashMap;
             System.out.println("Caught exception: "+e.toString());
             return false;
         }
+        */
     }
     
     private boolean registerAcctount(String email, String username, String password){
+        return true;
+        /*
+        
         try{
             //Class.forName("com.mysql.jdbc.Driver");
             conn = DriverManager.getConnection(url,user,hostpassword);
@@ -106,6 +112,7 @@ import java.util.HashMap;
             System.out.println("Caught exception: "+e.toString());
             return false;
         }
+        */
     }
     
     private void castMessage(String postMessage, userHandler postUser){
@@ -200,7 +207,7 @@ import java.util.HashMap;
                         else if(ifTerm){
                             connectedSocket.sendMessage(ChessStep);
                             connectedSocket.setIfTermToTrue();
-                            ifTerm = false;
+                                ifTerm = false;
                         }
                     }
                 }
