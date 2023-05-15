@@ -22,7 +22,7 @@ public class window extends JFrame {
     private int port = 5110;
     private static window currWindow;
     private JFrame frame;
-    
+
     private Socket socket;
     private Scanner scanner;
     private PrintStream sout;
@@ -82,7 +82,7 @@ public class window extends JFrame {
         c.gridx = 1;
         c.gridy = 3;
         panel.add(passwordField, c);
-        
+
         JLabel regUsernameLabel = new JLabel("Username:");
         c.gridx = 3;
         c.gridy = 1;
@@ -98,7 +98,7 @@ public class window extends JFrame {
         c.gridx = 3;
         c.gridy = 3;
         panel.add(regPasswordLabel, c);
-        
+
         regUsernameTextField = new JTextField(10);
         c.gridx = 4;
         c.gridy = 1;
@@ -128,14 +128,14 @@ public class window extends JFrame {
         c.gridy = 4;
         c.anchor = GridBagConstraints.LINE_END;
         panel.add(registrationButton, c);
-        
+
         regSuccess = new JLabel("Registrasion Success");
         loginButton.addActionListener(new sendMessageFromButton());
         c.gridx = 4;
         c.gridy = 4;
         c.anchor = GridBagConstraints.LINE_END;
         panel.add(registrationButton, c);
-        
+
         regFail = new JLabel("Registrasion Fail");
         regFail.setForeground(Color.RED);
         loginButton.addActionListener(new sendMessageFromButton());
@@ -145,7 +145,7 @@ public class window extends JFrame {
         panel.add(registrationButton, c);
         frame.setVisible(true);
     }
-    
+
     public void startApp(){
         try {
             socket = new Socket("localhost", port);
@@ -157,13 +157,13 @@ public class window extends JFrame {
             System.out.println("I/O error from port " + port);
         }
     }
-    
+
     public static void main(String[] args) {
         currWindow = new window();
         currWindow.windowLogin();
         currWindow.startApp();
     }
-    
+
     public void showLabel(boolean showLabel1) {
         if (showLabel1) {
             regSuccess.setVisible(true);
@@ -186,7 +186,7 @@ public class window extends JFrame {
         timer.setRepeats(false);
         timer.start();
     }
-    
+
     class sendMessageFromButton implements ActionListener{
         @Override
         public void actionPerformed(ActionEvent e){
@@ -229,7 +229,7 @@ public class window extends JFrame {
                     currWindow.showLabel(false);
                 }
             }
-            
+
         }
     }
 }

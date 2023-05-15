@@ -266,7 +266,7 @@ class Points {
     }
 }
 
-public class ClientFrame implements Runnable{
+public class ClientFrame{
     private static JFrame jf;
     //private String status="playing";
     private static Grid grid;
@@ -279,19 +279,10 @@ public class ClientFrame implements Runnable{
     static Searching searching;
     public ClientFrame(Socket socket){
         this.socket = socket;
-        try {
-            sin=new Scanner(socket.getInputStream());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
         createframe();
-        Thread thread = new Thread();
-        thread.start();
-    }
-
-    public void run(){
         start();
     }
+
 
     public void createframe(){
         searching= new Searching(socket);
@@ -345,26 +336,25 @@ public class ClientFrame implements Runnable{
                     searching.call();
                     try {
                         sin=new Scanner(socket.getInputStream());
-                        Thread startThread = new Thread(ClientFrame::start);
-                        startThread.start();
                     } catch (IOException ex) {
                         throw new RuntimeException(ex);
                     }
+                    Thread otherThread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            start();
+                        }
+                    });
+                    otherThread.start();
                 }
             }});
     }
 
     public static void main(String[] args) throws IOException {
-        Socket socket = new Socket("localhost", 5110);
-        Scanner scanner = new Scanner(socket.getInputStream());
-        PrintStream sout = new PrintStream(socket.getOutputStream());
-        ClientFrame frame = new ClientFrame(socket);
-        start();
     }
     public static void start() {
         String message =sin.nextLine();
         while (!message.equalsIgnoreCase("EXIT")) {
-            System.out.println(message);
             if(message.contains(",")){
                 String[] parts = message.split(","); // split the string into two parts using the comma as the delimiter
                 int firstNum = Integer.parseInt(parts[0]); // convert the first part to an integer
