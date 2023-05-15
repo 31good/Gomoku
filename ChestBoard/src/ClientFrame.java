@@ -1,3 +1,5 @@
+import org.w3c.dom.ls.LSOutput;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -14,14 +16,19 @@ class Grid extends JPanel {
     String color="B";
     String status;
     Socket socket;
+    PrintStream sout;
     int count = 0;
     boolean turn;
 
     Your_turn your_turn = new Your_turn();
-    Grid(Socket socket,boolean turn,String status) throws IOException {
+    Grid(Socket socket,boolean turn,String status,PrintStream sout) throws IOException {
         this.status=status;
         this.socket = socket;
+        System.out.println(socket);
         this.turn=turn;
+        this.sout = sout;
+        System.out.println(turn);
+        System.out.println(status);
         if(turn) your_turn.setVisible(true);
         this.setOpaque(false);
         for (int i = 0; i < 15; i++) {
@@ -33,6 +40,18 @@ class Grid extends JPanel {
         mouseclick();
     }
 
+    public void allset(boolean turn,String status){
+        points = new Points[15][15];
+        count=0;
+        this.turn=turn;
+        if(turn) your_turn.setVisible(true);
+        this.status=status;
+        for (int i = 0; i < 15; i++) {
+            for (int j = 0; j < 15; j++) {
+                points[i][j] = new Points(i, j, j * 40 + 26, i * 40 + 26);
+            }
+        }
+    }
     void listen_mouse() {
         MouseAdapter adapter = new MouseAdapter() {
             @Override
@@ -55,12 +74,11 @@ class Grid extends JPanel {
         addMouseListener(adapter);
     }
 
-    void mouseclick() throws IOException {
-        PrintStream sout =new PrintStream(socket.getOutputStream());
+    void mouseclick() {
         MouseAdapter adapter = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if ("end".equals(status) && !turn) return;
+                if ("end".equals(status) || !turn) return;
                 int x = e.getX();
                 int y = e.getY();
                 Points curr;
@@ -72,7 +90,9 @@ class Grid extends JPanel {
                             curr.show = false;
                             count += 1;
                             turn=!turn;
-                            sout.println(i + "," + j);
+                            call(i,j);
+                            sout.println(i+","+j);
+                            sout.flush();
                             repaint();
                             if (Objects.equals(checkover(points), "win")) {
                                 Gameover("win");
@@ -89,6 +109,9 @@ class Grid extends JPanel {
         addMouseListener(adapter);
     }
 
+    void call(int i, int j){
+        sout.println(i+","+j);
+    }
     void add_point(int i,int j){
         if(Objects.equals(color, "B")){
             points[i][j].occupied="W";
@@ -190,16 +213,10 @@ class Grid extends JPanel {
             }
 
         }
-        return "lose";
+        return "nothing";
     }
 
     public void Gameover(String win) {
-        PrintStream sout= null;
-        try {
-            sout = new PrintStream(socket.getOutputStream());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
         status = "end";
         if (Objects.equals(win, "win")) {
             JOptionPane.showMessageDialog(this, "Congratulation, You win!");
@@ -207,6 +224,7 @@ class Grid extends JPanel {
         } else if (Objects.equals(win, "lose")) {
             JOptionPane.showMessageDialog(this, "Sorry, You lose");
             sout.println("lose");
+            System.out.println(sout);
         } else {
             JOptionPane.showMessageDialog(this, "It's a draw");
             sout.println("draw");
@@ -276,9 +294,15 @@ public class ClientFrame{
     static Yes_or_no draw;
     static Refuse refuse = new Refuse();
     static Scanner sin;
+    static PrintStream sout;
     static Searching searching;
     public ClientFrame(Socket socket){
         this.socket = socket;
+        try {
+            this.sout= new PrintStream(socket.getOutputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         createframe();
         start();
     }
@@ -293,7 +317,7 @@ public class ClientFrame{
         jf.setResizable(false);
         jf.setLocationRelativeTo(null);
         try {
-            grid = new Grid( socket, false,"end");
+            grid = new Grid( socket, false,"end",sout);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -320,7 +344,7 @@ public class ClientFrame{
         menu2.add(item3);
         menu.setBackground(Color.WHITE);
         jf.setJMenuBar(menu);
-        item1.addActionListener(new Surrender(grid, socket));
+        item1.addActionListener(new Surrender(grid, sout));
         item2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -354,6 +378,7 @@ public class ClientFrame{
     public static void start() {
         String message =sin.nextLine();
         while (!message.equalsIgnoreCase("EXIT")) {
+            System.out.println(message);
             if(message.contains(",")){
                 String[] parts = message.split(","); // split the string into two parts using the comma as the delimiter
                 int firstNum = Integer.parseInt(parts[0]); // convert the first part to an integer
@@ -397,17 +422,13 @@ public class ClientFrame{
                 grid.status="start";
                 refuse.setvisible(false);
             }
-            else if(message.contains("|")){
-                String[] parts = message.split("|"); // split the string into two parts using the comma as the delimiter
-                jf.remove(grid);
-                try {
-                    grid=new Grid(socket,Boolean.parseBoolean(parts[1]),"start");
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                jf.add(grid);
+            else if(message.contains("_")){
+                System.out.println(message);
+                String[] parts = message.split("_"); // split the string into two parts using the comma as the delimiter
+                grid.allset(Boolean.parseBoolean(parts[1]),"start");
+                //jf.add(grid);
             }
-            if(sin.hasNextLine()){message=sin.nextLine();}
+            message=sin.nextLine();
         }
         try {
             socket.close();
@@ -447,23 +468,19 @@ class rules implements ActionListener {
 
 class Surrender implements ActionListener {
     Grid grid;
-    Socket socket;
+    PrintStream sout;
 
-    Surrender(Grid grid, Socket socket) {
+    Surrender(Grid grid, PrintStream sout) {
         this.grid = grid;
-        this.socket = socket;
+        this.sout = sout;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (Objects.equals(grid.status, "end")) return;
         grid.Gameover("lose");
-        try {
-            PrintStream sout = new PrintStream(socket.getOutputStream());
-            sout.println("lose");
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
+        sout.println("lose");
+        sout.println("lose");
     }
 }
 

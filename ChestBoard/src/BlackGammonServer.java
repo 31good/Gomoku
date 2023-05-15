@@ -135,7 +135,7 @@ public class BlackGammonServer {
         public void setUpChess(userHandler ConnectUser, Boolean Term){
             connectedSocket = ConnectUser;
             ifTerm = Term;
-            sendMessage("found|"+Term);
+            sendMessage("found_"+Term);
         }
         
         public String getUsername(){
@@ -198,17 +198,20 @@ public class BlackGammonServer {
                             unmatchUsersArr.remove(this);
                     }
                     else{
-                        String ChessStep = sin.nextLine();
-                        if (ChessStep.equals("endChess")){
+                        if(sin.hasNextLine()) {
+                            String ChessStep = sin.nextLine();
+                            System.out.println(ChessStep);
+                            if (ChessStep.equals("endChess")) {
                                 //update record to db
-                                storeChessHistory(username, connectedSocket.getUsername(),username);
+                                storeChessHistory(username, connectedSocket.getUsername(), username);
                                 connectedSocket.disconnectPlayer();
                                 connectedSocket = null;
-                        }
-                        else if(ifTerm){
-                            connectedSocket.sendMessage(ChessStep);
-                            connectedSocket.setIfTermToTrue();
+                            } else if (ifTerm) {
+                                connectedSocket.sendMessage(ChessStep);
+                                System.out.println(100);
+                                connectedSocket.setIfTermToTrue();
                                 ifTerm = false;
+                            }
                         }
                     }
                 }
