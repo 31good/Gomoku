@@ -216,14 +216,14 @@ class Grid extends JPanel {
     public void Gameover(String win) {
         status = "end";
         if (Objects.equals(win, "win")) {
-            JOptionPane.showMessageDialog(this, "Congratulation, You win!");
             sout.println("win");
+            JOptionPane.showMessageDialog(this, "Congratulation, You win!");
         } else if (Objects.equals(win, "lose")) {
-            JOptionPane.showMessageDialog(this, "Sorry, You lose");
             sout.println("lose");
+            JOptionPane.showMessageDialog(this, "Sorry, You lose");
         } else {
-            JOptionPane.showMessageDialog(this, "It's a draw");
             sout.println("draw");
+            JOptionPane.showMessageDialog(this, "It's a draw");
         }
     }
 }
@@ -406,6 +406,7 @@ public class ClientFrame{
                 }
             }
             else if(Objects.equals(message,"yes")){
+                wd.setvisible(false);
                 grid.Gameover("draw");
                 break;
             }
@@ -421,8 +422,8 @@ public class ClientFrame{
             }
             else if(message.contains("_")){
                 String[] parts = message.split("_"); // split the string into two parts using the comma as the delimiter
-                grid.allset(Boolean.parseBoolean(parts[1]),"start");
                 searching.setvisible(false);
+                grid.allset(Boolean.parseBoolean(parts[1]),"start");
                 //jf.add(grid);
             }
             message=sin.nextLine();
@@ -474,7 +475,6 @@ class Surrender implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (Objects.equals(grid.status, "end")) return;
         grid.Gameover("lose");
-        ClientFrame.sout.println("lose");
     }
 }
 
@@ -593,7 +593,7 @@ class Your_turn {
     public void setVisible(boolean bool){
         jf.setVisible(bool);
         try {
-            Thread.sleep(2000); // wait for 5 seconds
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
         }
     }
