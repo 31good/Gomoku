@@ -302,7 +302,6 @@ public class ClientFrame{
         jf.add(grid);
         //grid.status="end";
         jf.setVisible(true);
-        System.out.println(2);
     }
 
     static void setupMenu() {
@@ -553,7 +552,6 @@ class Searching {
     JFrame jf;
     Socket socket;
     Searching(Socket socket) {
-        System.out.println(1);
         this.socket=socket;
         jf = new JFrame();
         jf.setSize(250, 100);
