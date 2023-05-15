@@ -90,9 +90,9 @@ class Grid extends JPanel {
                             curr.show = false;
                             count += 1;
                             turn=!turn;
-                            call(i,j);
+                            if(count==1){sout.println("start");}
                             sout.println(i+","+j);
-                            sout.flush();
+                            //sout.flush();
                             repaint();
                             if (Objects.equals(checkover(points), "win")) {
                                 Gameover("win");
@@ -109,9 +109,6 @@ class Grid extends JPanel {
         addMouseListener(adapter);
     }
 
-    void call(int i, int j){
-        sout.println(i+","+j);
-    }
     void add_point(int i,int j){
         if(Objects.equals(color, "B")){
             points[i][j].occupied="W";
@@ -224,7 +221,6 @@ class Grid extends JPanel {
         } else if (Objects.equals(win, "lose")) {
             JOptionPane.showMessageDialog(this, "Sorry, You lose");
             sout.println("lose");
-            System.out.println(sout);
         } else {
             JOptionPane.showMessageDialog(this, "It's a draw");
             sout.println("draw");
@@ -287,7 +283,7 @@ class Points {
 public class ClientFrame{
     private static JFrame jf;
     //private String status="playing";
-    private static Grid grid;
+    static Grid grid;
     private static JMenuBar menu;
     static Socket socket;
     static Waiting_draw wd;
@@ -324,6 +320,7 @@ public class ClientFrame{
         setupMenu();
         //paint the chessboard
         jf.add(grid);
+        wd= new Waiting_draw(socket,grid);
         //grid.status="end";
         jf.setVisible(true);
     }
@@ -344,11 +341,11 @@ public class ClientFrame{
         menu2.add(item3);
         menu.setBackground(Color.WHITE);
         jf.setJMenuBar(menu);
-        item1.addActionListener(new Surrender(grid, sout));
+        item1.addActionListener(new Surrender(grid));
         item2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                wd=new Waiting_draw(socket,grid);
+                wd.perform();
             }});
         item3.addActionListener(new rules());
         //item4.addActionListener(new Searching(sout));
@@ -403,7 +400,7 @@ public class ClientFrame{
             } else if(Objects.equals(message, "asking_draw")){
                 grid.status="end";
                 try {
-                    draw=new Yes_or_no(socket,grid);
+                    draw=new Yes_or_no(grid);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -423,9 +420,9 @@ public class ClientFrame{
                 refuse.setvisible(false);
             }
             else if(message.contains("_")){
-                System.out.println(message);
                 String[] parts = message.split("_"); // split the string into two parts using the comma as the delimiter
                 grid.allset(Boolean.parseBoolean(parts[1]),"start");
+                searching.setvisible(false);
                 //jf.add(grid);
             }
             message=sin.nextLine();
@@ -468,23 +465,20 @@ class rules implements ActionListener {
 
 class Surrender implements ActionListener {
     Grid grid;
-    PrintStream sout;
 
-    Surrender(Grid grid, PrintStream sout) {
+    Surrender(Grid grid) {
         this.grid = grid;
-        this.sout = sout;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (Objects.equals(grid.status, "end")) return;
         grid.Gameover("lose");
-        sout.println("lose");
-        sout.println("lose");
+        ClientFrame.sout.println("lose");
     }
 }
 
-class Waiting_draw implements ActionListener {
+class Waiting_draw {
     Socket socket;
     Grid grid;
     JFrame jf;
@@ -497,8 +491,7 @@ class Waiting_draw implements ActionListener {
         jf.setVisible(bool);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
+    public void perform() {
         if (Objects.equals(grid.status, "end")) return;
         grid.status="end";
         jf = new JFrame();
@@ -512,13 +505,7 @@ class Waiting_draw implements ActionListener {
         jf.setLocationRelativeTo(null);
         jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         jf.setVisible(true);
-        try {
-            PrintStream sout = new PrintStream(socket.getOutputStream());
-            sout.println("asking_draw");
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-
+        ClientFrame.sout.println("asking_draw");
     }
 }
 
@@ -544,21 +531,19 @@ class Refuse{
 }
 
 class Yes_or_no {
-    Yes_or_no(Socket socket,Grid grid) throws IOException {
-        PrintStream sout = new PrintStream(socket.getOutputStream());
+    Yes_or_no(Grid grid) throws IOException {
         JFrame jf = new JFrame("");
         jf.setSize(400, 200);
         jf.setLocationRelativeTo(null);
-        jf.setVisible(true);
         int result = JOptionPane.showConfirmDialog(jf, "Your opponent is asking for a draw", "Agree", JOptionPane.YES_NO_OPTION);
         if (result == JOptionPane.YES_OPTION) {
-            sout.println("yes");
+            ClientFrame.sout.println("yes");
+            ClientFrame.grid.Gameover("draw");
         }
         else{
-            sout.println("no");
+            ClientFrame.sout.println("no");
             grid.status="start";
         }
-
         jf.setVisible(false);
     }
 
@@ -581,14 +566,11 @@ class Searching {
         jf.setLocationRelativeTo(null);
     }
     public void call() {
-        PrintStream sout = null;
-        try {
-            sout = new PrintStream(socket.getOutputStream());
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-        sout.println("search");
+        ClientFrame.sout.println("search");
         jf.setVisible(true);
+    }
+    public void setvisible(boolean bool){
+        jf.setVisible(bool);
     }
 
 
@@ -610,6 +592,10 @@ class Your_turn {
 
     public void setVisible(boolean bool){
         jf.setVisible(bool);
+        try {
+            Thread.sleep(2000); // wait for 5 seconds
+        } catch (InterruptedException e) {
+        }
     }
 
 }

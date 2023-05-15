@@ -198,7 +198,7 @@ public class BlackGammonServer {
                             unmatchUsersArr.remove(this);
                     }
                     else{
-                        //if(sin.hasNextLine()) {
+                        if(sin.hasNextLine()) {
                             String ChessStep = sin.nextLine();
                             System.out.println(ChessStep);
                             if (ChessStep.equals("endChess")) {
@@ -206,13 +206,13 @@ public class BlackGammonServer {
                                 storeChessHistory(username, connectedSocket.getUsername(), username);
                                 connectedSocket.disconnectPlayer();
                                 connectedSocket = null;
-                            } else if (ifTerm) {
-                                connectedSocket.sendMessage(ChessStep);
-                                System.out.println(100);
-                                connectedSocket.setIfTermToTrue();
-                                ifTerm = false;
                             }
-                        //}
+                            else if (ifTerm) {
+                                connectedSocket.sendMessage(ChessStep);
+                                connectedSocket.setIfTermToTrue();
+                                //ifTerm = false;
+                            }
+                        }
                     }
                 }
             userSocket.close();
