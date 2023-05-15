@@ -204,13 +204,9 @@ public class window extends JFrame {
                 sout.println(loginpassword);
                 returnCode = scanner.nextLine();
                 if (returnCode.equals("200")){
-                    try {
-                        frame.setVisible(false);
-                        System.out.println("success");
-                        new ClientFrame("B", socket, scanner, sout);
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
+                    frame.setVisible(false);
+                    System.out.println("success");
+                    new ClientFrame(socket);
                     frame.dispose();
                     System.out.println("Login window close");
                 }

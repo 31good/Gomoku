@@ -9,18 +9,20 @@ import java.io.PrintStream;
 import java.net.Socket;
 import java.util.Objects;
 import java.util.Scanner;
-
 class Grid extends JPanel {
     Points[][] points = new Points[15][15];
-    String color;
-    String status = "start";
+    String color="B";
+    String status;
     Socket socket;
     int count = 0;
-    PrintStream sout;
+    boolean turn;
 
-    Grid(String color, Socket socket, PrintStream sout) throws IOException {
-        this.color = color;
+    Your_turn your_turn = new Your_turn();
+    Grid(Socket socket,boolean turn,String status) throws IOException {
+        this.status=status;
         this.socket = socket;
+        this.turn=turn;
+        if(turn) your_turn.setVisible(true);
         this.setOpaque(false);
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
@@ -53,11 +55,12 @@ class Grid extends JPanel {
         addMouseListener(adapter);
     }
 
-    void mouseclick() {
+    void mouseclick() throws IOException {
+        PrintStream sout =new PrintStream(socket.getOutputStream());
         MouseAdapter adapter = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if ("end".equals(status)) return;
+                if ("end".equals(status) && !turn) return;
                 int x = e.getX();
                 int y = e.getY();
                 Points curr;
@@ -68,10 +71,10 @@ class Grid extends JPanel {
                             curr.occupied = color;
                             curr.show = false;
                             count += 1;
+                            turn=!turn;
                             sout.println(i + "," + j);
                             repaint();
                             if (Objects.equals(checkover(points), "win")) {
-                                //System.out.println("Win");
                                 Gameover("win");
                             }
                             if (Objects.equals(checkover(points), "draw")) {
@@ -95,6 +98,7 @@ class Grid extends JPanel {
         }
         points[i][j].show = false;
         count += 1;
+        turn=!turn;
         repaint();
     }
 
@@ -190,6 +194,12 @@ class Grid extends JPanel {
     }
 
     public void Gameover(String win) {
+        PrintStream sout= null;
+        try {
+            sout = new PrintStream(socket.getOutputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         status = "end";
         if (Objects.equals(win, "win")) {
             JOptionPane.showMessageDialog(this, "Congratulation, You win!");
@@ -256,39 +266,55 @@ class Points {
     }
 }
 
-public class ClientFrame {
-    private JFrame jf;
+public class ClientFrame implements Runnable{
+    private static JFrame jf;
     //private String status="playing";
     private static Grid grid;
-    private JMenuBar menu;
+    private static JMenuBar menu;
     static Socket socket;
-    static Scanner sin;
     static Waiting_draw wd;
     static Yes_or_no draw;
-
     static Refuse refuse = new Refuse();
-    public ClientFrame(String color, Socket socket, Scanner sin, PrintStream sout) throws IOException {
-        ClientFrame.socket = socket;
-        //settings for frame
+    static Scanner sin;
+    static Searching searching;
+    public ClientFrame(Socket socket){
+        this.socket = socket;
+        try {
+            sin=new Scanner(socket.getInputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        createframe();
+        Thread thread = new Thread();
+        thread.start();
+    }
+
+    public void run(){
+        start();
+    }
+
+    public void createframe(){
+        searching= new Searching(socket);
         jf = new JFrame("Gomoku");
         jf.setSize(620, 670);
         jf.getContentPane().setBackground(new Color(210, 150, 20));
         jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jf.setResizable(false);
         jf.setLocationRelativeTo(null);
+        try {
+            grid = new Grid( socket, false,"end");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         setupMenu();
-        //listen_mouse();
-        grid = new Grid(color, socket, sout);
         //paint the chessboard
         jf.add(grid);
         //grid.status="end";
         jf.setVisible(true);
-        System.out.println("11111");
-        start();
+        System.out.println(2);
     }
 
-
-    void setupMenu() {
+    static void setupMenu() {
         menu = new JMenuBar();
         JMenu menu1 = new JMenu("Game");
         JMenu menu2 = new JMenu("Help");
@@ -296,8 +322,10 @@ public class ClientFrame {
         menu.add(menu2);
         JMenuItem item1 = new JMenuItem("Surrender");
         JMenuItem item2 = new JMenuItem("Ask for a Draw");
+        JMenuItem item4 = new JMenuItem("Search for a match");
         menu1.add(item1);
         menu1.add(item2);
+        menu1.add(item4);
         JMenuItem item3 = new JMenuItem("Instruction");
         menu2.add(item3);
         menu.setBackground(Color.WHITE);
@@ -309,20 +337,34 @@ public class ClientFrame {
                 wd=new Waiting_draw(socket,grid);
             }});
         item3.addActionListener(new rules());
+        //item4.addActionListener(new Searching(sout));
+        item4.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (Objects.equals(grid.status, "end")){
+                    searching.call();
+                    try {
+                        sin=new Scanner(socket.getInputStream());
+                        Thread startThread = new Thread(ClientFrame::start);
+                        startThread.start();
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }});
     }
 
     public static void main(String[] args) throws IOException {
-        //"B" for black and "W" for white
         Socket socket = new Socket("localhost", 5110);
         Scanner scanner = new Scanner(socket.getInputStream());
         PrintStream sout = new PrintStream(socket.getOutputStream());
-        ClientFrame frame = new ClientFrame("B", socket,scanner,sout);
+        ClientFrame frame = new ClientFrame(socket);
         start();
     }
-
-    public static void start() throws IOException {
-        String message = sin.nextLine();
-        while (true) {
+    public static void start() {
+        String message =sin.nextLine();
+        while (!message.equalsIgnoreCase("EXIT")) {
+            System.out.println(message);
             if(message.contains(",")){
                 String[] parts = message.split(","); // split the string into two parts using the comma as the delimiter
                 int firstNum = Integer.parseInt(parts[0]); // convert the first part to an integer
@@ -346,7 +388,11 @@ public class ClientFrame {
                 }
             } else if(Objects.equals(message, "asking_draw")){
                 grid.status="end";
-                draw=new Yes_or_no(socket,grid);
+                try {
+                    draw=new Yes_or_no(socket,grid);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
             else if(Objects.equals(message,"yes")){
                 grid.Gameover("draw");
@@ -362,10 +408,23 @@ public class ClientFrame {
                 grid.status="start";
                 refuse.setvisible(false);
             }
-            message = sin.nextLine();
+            else if(message.contains("|")){
+                String[] parts = message.split("|"); // split the string into two parts using the comma as the delimiter
+                jf.remove(grid);
+                try {
+                    grid=new Grid(socket,Boolean.parseBoolean(parts[1]),"start");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                jf.add(grid);
             }
-
-        socket.close();
+            if(sin.hasNextLine()){message=sin.nextLine();}
+        }
+        try {
+            socket.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
 
@@ -495,6 +554,57 @@ class Yes_or_no {
         }
 
         jf.setVisible(false);
+    }
+
+}
+
+
+class Searching {
+    JFrame jf;
+    Socket socket;
+    Searching(Socket socket) {
+        System.out.println(1);
+        this.socket=socket;
+        jf = new JFrame();
+        jf.setSize(250, 100);
+        JPanel jp = new JPanel(new BorderLayout());
+
+        JTextArea text = new JTextArea("Searching For a Match");
+        jp.add(text, BorderLayout.CENTER);
+
+        jf.getContentPane().add(jp);
+        jf.setLocationRelativeTo(null);
+    }
+    public void call() {
+        PrintStream sout = null;
+        try {
+            sout = new PrintStream(socket.getOutputStream());
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        sout.println("search");
+        jf.setVisible(true);
+    }
+
+
+}
+class Your_turn {
+    JFrame jf;
+    Your_turn() {
+        jf = new JFrame();
+        jf.setSize(250, 100);
+        JPanel jp = new JPanel(new BorderLayout());
+
+        JTextArea text = new JTextArea("Your turn");
+        jp.add(text, BorderLayout.CENTER);
+
+        jf.getContentPane().add(jp);
+        jf.setLocationRelativeTo(null);
+        jf.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    }
+
+    public void setVisible(boolean bool){
+        jf.setVisible(bool);
     }
 
 }

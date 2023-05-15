@@ -135,6 +135,7 @@ public class BlackGammonServer {
         public void setUpChess(userHandler ConnectUser, Boolean Term){
             connectedSocket = ConnectUser;
             ifTerm = Term;
+            sendMessage("found|"+Term);
         }
         
         public String getUsername(){
@@ -147,14 +148,14 @@ public class BlackGammonServer {
                 sout = new PrintStream(userSocket.getOutputStream());
                 //1 is registration
                 while(true){
-                    String inputIfRegistration = sin.next();
+                    String inputIfRegistration = sin.nextLine();
                     if(inputIfRegistration.equals("1")){
                         sout.println("Please enter your email:");
-                        String email = sin.next();
+                        String email = sin.nextLine();
                         sout.println("Please enter your username:");
-                        String inputUsername = sin.next();
+                        String inputUsername = sin.nextLine();
                         sout.println("Please enter your password:");
-                        String password = sin.next();
+                        String password = sin.nextLine();
                         Boolean ifSuccess = registerAcctount(email, username, password);
                         if(ifSuccess){
                             sout.println("200");
@@ -163,9 +164,9 @@ public class BlackGammonServer {
                             sout.println("500");
                     }else{
                         sout.println("Please enter your username:");
-                        String inputUsername = sin.next();
+                        String inputUsername = sin.nextLine();
                         sout.println("Please enter your password:");
-                        String password = sin.next();
+                        String password = sin.nextLine();
                         Boolean accountValidation = accountAuthenticate(inputUsername, password, userSocket.getInetAddress().getHostAddress());
                         if (!accountValidation){
                             sout.println("500");
@@ -178,8 +179,8 @@ public class BlackGammonServer {
                 }
                 while(true){
                     if(connectedSocket == null){
-                        String menuOption = sin.next();
-                        if (menuOption.equals("Search")){
+                        String menuOption = sin.nextLine();
+                        if (menuOption.equals("search")){
                             unmatchUsersArr.add(this);
                             while (unmatchUsersArr.size() >= 2){
                                 unmatchUsersArr.get(0).setUpChess(unmatchUsersArr.get(1), true);
@@ -197,7 +198,7 @@ public class BlackGammonServer {
                             unmatchUsersArr.remove(this);
                     }
                     else{
-                        String ChessStep = sin.next();
+                        String ChessStep = sin.nextLine();
                         if (ChessStep.equals("endChess")){
                                 //update record to db
                                 storeChessHistory(username, connectedSocket.getUsername(),username);
