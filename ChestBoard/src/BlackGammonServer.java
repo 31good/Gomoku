@@ -198,7 +198,7 @@ public class BlackGammonServer {
                             unmatchUsersArr.remove(this);
                     }
                     else{
-                        if(sin.hasNextLine()) {
+                        //if(sin.hasNextLine()) {
                             String ChessStep = sin.nextLine();
                             System.out.println(ChessStep);
                             if (ChessStep.equals("endChess")) {
@@ -212,7 +212,7 @@ public class BlackGammonServer {
                                 connectedSocket.setIfTermToTrue();
                                 ifTerm = false;
                             }
-                        }
+                        //}
                     }
                 }
             userSocket.close();

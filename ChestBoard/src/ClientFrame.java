@@ -21,12 +21,12 @@ class Grid extends JPanel {
     boolean turn;
 
     Your_turn your_turn = new Your_turn();
-    Grid(Socket socket,boolean turn,String status,PrintStream sout) throws IOException {
+    Grid(Socket socket,boolean turn,String status) throws IOException {
         this.status=status;
         this.socket = socket;
         System.out.println(socket);
         this.turn=turn;
-        this.sout = sout;
+        this.sout = new PrintStream(socket.getOutputStream());
         System.out.println(turn);
         System.out.println(status);
         if(turn) your_turn.setVisible(true);
@@ -317,7 +317,7 @@ public class ClientFrame{
         jf.setResizable(false);
         jf.setLocationRelativeTo(null);
         try {
-            grid = new Grid( socket, false,"end",sout);
+            grid = new Grid( socket, false,"end");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
